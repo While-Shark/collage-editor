@@ -2,9 +2,7 @@
 
 一个高保真、功能丰富的社交媒体网格拼图编辑器。支持 1:1 正方形布局、多种滤镜、贴纸系统以及自定义背景，旨在为用户提供极致的拼图创作体验。
 
-> 项目预览
-
-<img width="362" height="657" src="https://github.com/user-attachments/assets/1bc73f2b-0368-460c-92d6-f0fb7b32d5ee" />
+![项目预览](./docs/preview.png)
 
 ## ✨ 主要功能
 
@@ -40,7 +38,7 @@
 
 1. **克隆仓库**
    ```bash
-   git clone https://github.com/While-Shark/collage-editor.git
+   git clone https://github.com/your-username/collage-editor.git
    cd collage-editor
    ```
 
@@ -63,7 +61,7 @@
 
 | 布局选择 | 滤镜编辑 | 贴纸与背景 |
 | :---: | :---: | :---: |
-| <img width="362" height="657" alt="image" src="https://github.com/user-attachments/assets/8365e594-ec43-43cf-b26c-43372af361b2" /> | <img width="352" height="655" alt="image" src="https://github.com/user-attachments/assets/e639adfb-13cf-46de-9591-515ec6408725" /> | <img width="350" height="643" alt="image" src="https://github.com/user-attachments/assets/ccb28cbf-addd-4400-bb66-24a418b8f160" /> |
+| ![布局](./docs/layout.png) | ![滤镜](./docs/filter.png) | ![背景](./docs/background.png) |
 
 ## 📝 开源协议
 

@@ -49,16 +49,26 @@ const DEFAULT_STYLE: LayoutStyle = {
   backgroundType: 'color',
 };
 
+export interface ImageTransform {
+  scale: number;
+  x: number; // offset X
+  y: number; // offset Y
+}
+
 interface AppState {
   template: TemplateType;
   style: LayoutStyle;
   images: (string | null)[];
+  imageTransforms: ImageTransform[];
   stickers: Sticker[];
   favoriteFilters: string[]; // IDs of favorite filter presets
   view: 'editor' | 'gallery' | 'preview';
+  selectedImageIndex: number | null;
   setTemplate: (template: TemplateType) => void;
   setStyle: (style: Partial<LayoutStyle>) => void;
   setImage: (index: number, url: string | null) => void;
+  updateImageTransform: (index: number, updates: Partial<ImageTransform>) => void;
+  setSelectedImageIndex: (index: number | null) => void;
   addSticker: (type: 'emoji' | 'image', content: string) => void;
   updateSticker: (id: string, updates: Partial<Sticker>) => void;
   removeSticker: (id: string) => void;
@@ -68,31 +78,44 @@ interface AppState {
   resetToDefault: () => void;
 }
 
+const DEFAULT_TRANSFORM: ImageTransform = { scale: 1, x: 0, y: 0 };
+
 export const useStore = create<AppState>()(
   temporal((set) => ({
     template: '3-image',
     style: { ...DEFAULT_STYLE },
     images: [null, null, null], // Initial for 3-image
+    imageTransforms: [DEFAULT_TRANSFORM, DEFAULT_TRANSFORM, DEFAULT_TRANSFORM],
     stickers: [],
     favoriteFilters: [],
     view: 'editor',
-    setTemplate: (template) => set({ 
-      template, 
-      images: Array(
-        template === '1-image' ? 1 :
-        template === '2-image' ? 2 :
-        template === '3-image' ? 3 :
-        template === '4-image' ? 4 :
-        template === '6-image' ? 6 :
-        template === '9-image' ? 9 : 3
-      ).fill(null) 
-    }),
+    selectedImageIndex: null,
+    setTemplate: (template) => {
+      const count = template === '1-image' ? 1 :
+                    template === '2-image' ? 2 :
+                    template === '3-image' ? 3 :
+                    template === '4-image' ? 4 :
+                    template === '6-image' ? 6 :
+                    template === '9-image' ? 9 : 3;
+      set({ 
+        template, 
+        images: Array(count).fill(null),
+        imageTransforms: Array.from({ length: count }, () => ({ ...DEFAULT_TRANSFORM })),
+        selectedImageIndex: null
+      });
+    },
     setStyle: (style) => set((state) => ({ style: { ...state.style, ...style } })),
     setImage: (index, url) => set((state) => {
       const newImages = [...state.images];
       newImages[index] = url;
       return { images: newImages };
     }),
+    updateImageTransform: (index, updates) => set((state) => {
+      const newTransforms = [...state.imageTransforms];
+      newTransforms[index] = { ...newTransforms[index], ...updates };
+      return { imageTransforms: newTransforms };
+    }),
+    setSelectedImageIndex: (index) => set({ selectedImageIndex: index }),
     addSticker: (type, content) => set((state) => ({
       stickers: [...state.stickers, {
         id: Math.random().toString(36).substr(2, 9),

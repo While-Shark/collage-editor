@@ -16,7 +16,8 @@ import {
   RotateCcw,
   Palette,
   Image as ImageIcon,
-  Check
+  Check,
+  X
 } from 'lucide-react';
 import { exportToCanvas } from '../CanvasUtils';
 
@@ -67,16 +68,12 @@ const FILTER_PRESETS: FilterPreset[] = [
 const FILTER_CATEGORIES = ['收藏', '基础', '胶片', '调色', '艺术'];
 
 export const Editor: React.FC = () => {
-  const { 
-    style, 
-    setStyle, 
-    template, 
-    images, 
-    addSticker, 
-    favoriteFilters, 
-    toggleFavoriteFilter,
-    resetToDefault
-  } = useStore();
+  const style = useStore(state => state.style);
+  const setStyle = useStore(state => state.setStyle);
+  const addSticker = useStore(state => state.addSticker);
+  const favoriteFilters = useStore(state => state.favoriteFilters);
+  const toggleFavoriteFilter = useStore(state => state.toggleFavoriteFilter);
+  const resetToDefault = useStore(state => state.resetToDefault);
   
   const { undo, redo, pastStates, futureStates } = useTemporalStore((state) => state);
   
@@ -92,8 +89,9 @@ export const Editor: React.FC = () => {
   };
 
   const handleExport = async (type: 'album' | 'wechat') => {
+    const { template, images, imageTransforms } = useStore.getState();
     try {
-      const dataUrl = await exportToCanvas(template, images, style);
+      const dataUrl = await exportToCanvas(template, images, style, imageTransforms);
       const link = document.createElement('a');
       link.download = `editorial-canvas-${Date.now()}.png`;
       link.href = dataUrl;
@@ -134,7 +132,7 @@ export const Editor: React.FC = () => {
     input.click();
   };
 
-  const ControlSlider = ({ label, value, min, max, onChange, unit = 'px' }: any) => (
+  const ControlSlider = ({ label, value, min, max, step = 1, onChange, unit = 'px' }: any) => (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
         <label className="font-headline font-semibold text-xs tracking-tight text-on-surface/70 uppercase">{label}</label>
@@ -144,8 +142,9 @@ export const Editor: React.FC = () => {
         type="range"
         min={min}
         max={max}
+        step={step}
         value={value}
-        onChange={(e) => onChange(parseInt(e.target.value))}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
         className="w-full h-1 bg-secondary-container rounded-full appearance-none cursor-pointer accent-primary"
       />
     </div>
@@ -464,7 +463,7 @@ export const Editor: React.FC = () => {
           </div>
         )}
       </section>
-
+      
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => handleExport('album')}

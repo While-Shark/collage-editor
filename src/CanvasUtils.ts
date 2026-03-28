@@ -1,11 +1,12 @@
-import { LayoutStyle, TemplateType, useStore } from './store';
+import { LayoutStyle, TemplateType, useStore, ImageTransform } from './store';
 
 export const EXPORT_SIZE = 2160;
 
 export async function exportToCanvas(
   template: TemplateType,
   images: (string | null)[],
-  style: LayoutStyle
+  style: LayoutStyle,
+  imageTransforms: ImageTransform[]
 ): Promise<string> {
   const canvas = document.createElement('canvas');
   canvas.width = EXPORT_SIZE;
@@ -107,7 +108,7 @@ export async function exportToCanvas(
   const borderWidth = style.borderWidth * scale;
   const cornerRadius = style.cornerRadius * scale;
 
-  const drawImage = async (imgUrl: string | null, x: number, y: number, w: number, h: number) => {
+  const drawImage = async (imgUrl: string | null, x: number, y: number, w: number, h: number, index: number) => {
     if (!imgUrl) {
       ctx.fillStyle = '#f3e2ff';
       roundRect(ctx, x, y, w, h, cornerRadius);
@@ -122,6 +123,8 @@ export async function exportToCanvas(
       img.onerror = reject;
       img.src = imgUrl;
     });
+
+    const transform = imageTransforms[index] || { scale: 1, x: 0, y: 0 };
 
     ctx.save();
     roundRect(ctx, x, y, w, h, cornerRadius);
@@ -147,7 +150,17 @@ export async function exportToCanvas(
       drawY = y - (drawH - h) / 2;
     }
 
-    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    // Apply Transforms
+    ctx.save();
+    const centerX = x + w / 2;
+    const centerY = y + h / 2;
+    ctx.translate(centerX, centerY);
+    ctx.scale(transform.scale, transform.scale);
+    ctx.translate((transform.x / 100) * w, (transform.y / 100) * h);
+    
+    ctx.drawImage(img, drawX - centerX, drawY - centerY, drawW, drawH);
+    ctx.restore();
+
     ctx.restore();
     ctx.filter = 'none'; // Reset filter for next elements
   };
@@ -156,31 +169,27 @@ export async function exportToCanvas(
   const startX = spacing;
   const startY = spacing;
 
-  // ... (Layout logic remains same) ...
   if (template === '1-image') {
-    await drawImage(images[0], startX, startY, contentSize, contentSize);
+    await drawImage(images[0], startX, startY, contentSize, contentSize, 0);
   } else if (template === '2-image') {
     const itemW = (contentSize - borderWidth) / 2;
-    await drawImage(images[0], startX, startY, itemW, contentSize);
-    await drawImage(images[1], startX + itemW + borderWidth, startY, itemW, contentSize);
+    await drawImage(images[0], startX, startY, itemW, contentSize, 0);
+    await drawImage(images[1], startX + itemW + borderWidth, startY, itemW, contentSize, 1);
   } else if (template === '3-image') {
-    // 3-Image Layout: 1 Large Left, 2 Small Right
     const largeW = (contentSize - borderWidth) * (2 / 3);
     const smallW = contentSize - largeW - borderWidth;
     const smallH = (contentSize - borderWidth) / 2;
 
-    await drawImage(images[0], startX, startY, largeW, contentSize);
-    await drawImage(images[1], startX + largeW + borderWidth, startY, smallW, smallH);
-    await drawImage(images[2], startX + largeW + borderWidth, startY + smallH + borderWidth, smallW, smallH);
+    await drawImage(images[0], startX, startY, largeW, contentSize, 0);
+    await drawImage(images[1], startX + largeW + borderWidth, startY, smallW, smallH, 1);
+    await drawImage(images[2], startX + largeW + borderWidth, startY + smallH + borderWidth, smallW, smallH, 2);
   } else if (template === '4-image') {
-    // 4-Image Layout: 2x2 Grid
     const itemSize = (contentSize - borderWidth) / 2;
-    await drawImage(images[0], startX, startY, itemSize, itemSize);
-    await drawImage(images[1], startX + itemSize + borderWidth, startY, itemSize, itemSize);
-    await drawImage(images[2], startX, startY + itemSize + borderWidth, itemSize, itemSize);
-    await drawImage(images[3], startX + itemSize + borderWidth, startY + itemSize + borderWidth, itemSize, itemSize);
+    await drawImage(images[0], startX, startY, itemSize, itemSize, 0);
+    await drawImage(images[1], startX + itemSize + borderWidth, startY, itemSize, itemSize, 1);
+    await drawImage(images[2], startX, startY + itemSize + borderWidth, itemSize, itemSize, 2);
+    await drawImage(images[3], startX + itemSize + borderWidth, startY + itemSize + borderWidth, itemSize, itemSize, 3);
   } else if (template === '6-image') {
-    // 6-Image Layout: 2x3 Grid
     const itemW = (contentSize - borderWidth) / 2;
     const itemH = (contentSize - borderWidth * 2) / 3;
     for (let i = 0; i < 6; i++) {
@@ -191,11 +200,11 @@ export async function exportToCanvas(
         startX + col * (itemW + borderWidth),
         startY + row * (itemH + borderWidth),
         itemW,
-        itemH
+        itemH,
+        i
       );
     }
   } else if (template === '9-image') {
-    // 9-Image Layout: 3x3 Grid
     const itemSize = (contentSize - borderWidth * 2) / 3;
     for (let i = 0; i < 9; i++) {
       const col = i % 3;
@@ -205,7 +214,8 @@ export async function exportToCanvas(
         startX + col * (itemSize + borderWidth),
         startY + row * (itemSize + borderWidth),
         itemSize,
-        itemSize
+        itemSize,
+        i
       );
     }
   }
