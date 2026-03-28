@@ -1,0 +1,24 @@
+name: collage_editor_mobile
+description: A high-fidelity grid collage editor mobile app.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  provider: ^6.0.5
+  image_picker: ^1.0.4
+  path_provider: ^2.1.1
+  screenshot: ^2.1.0
+  vector_math: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
