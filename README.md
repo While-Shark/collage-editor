@@ -40,7 +40,7 @@
 
 1. **克隆仓库**
    ```bash
-   git clone https://github.com/your-username/collage-editor.git
+   git clone https://github.com/While-Shark/collage-editor.git
    cd collage-editor
    ```
 
