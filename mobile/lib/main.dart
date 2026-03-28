@@ -4,6 +4,9 @@ import 'providers/collage_provider.dart';
 import 'screens/home_screen.dart';
 
 void main() {
+  // 确保 Flutter 绑定已初始化，防止异步调用或引擎初始化问题
+  WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(
     MultiProvider(
       providers: [

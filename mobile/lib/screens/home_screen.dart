@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
-          // 使用 Positioned.fill 确保内容填充整个屏幕，防止布局卡死
+          // 使用 Positioned.fill 确保内容填充整个屏幕
           Positioned.fill(
             child: IndexedStack(
               index: _currentIndex,
@@ -86,7 +86,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          _buildBottomNav(), // 悬浮底部导航栏
+          // 悬浮底部导航栏
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildBottomNav(),
+          ),
         ],
       ),
     );

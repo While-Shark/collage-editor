@@ -14,6 +14,11 @@ class CollageCanvas extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // 防止宽度或高度为 0 时导致的布局错误
+        if (constraints.maxWidth <= 0 || constraints.maxHeight <= 0) {
+          return const SizedBox.shrink();
+        }
+        
         return GestureDetector(
           onTap: () => context.read<CollageProvider>().setSelectedIndex(null),
           child: Stack(
