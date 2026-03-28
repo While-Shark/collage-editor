@@ -2,7 +2,8 @@
 
 一个高保真、功能丰富的社交媒体网格拼图编辑器。支持 1:1 正方形布局、多种滤镜、贴纸系统以及自定义背景，旨在为用户提供极致的拼图创作体验。
 
-![项目预览](./docs/preview.png)
+![项目预览](<img width="404" height="678" alt="image" src="https://github.com/user-attachments/assets/0dae41d1-e882-4dd3-b311-aa5c450ab442" />
+)
 
 ## ✨ 主要功能
 
@@ -61,7 +62,10 @@
 
 | 布局选择 | 滤镜编辑 | 贴纸与背景 |
 | :---: | :---: | :---: |
-| ![布局](./docs/layout.png) | ![滤镜](./docs/filter.png) | ![背景](./docs/background.png) |
+| ![布局](<img width="362" height="657" alt="image" src="https://github.com/user-attachments/assets/8365e594-ec43-43cf-b26c-43372af361b2" />
+) | ![滤镜](<img width="352" height="655" alt="image" src="https://github.com/user-attachments/assets/e639adfb-13cf-46de-9591-515ec6408725" />
+) | ![背景](<img width="350" height="643" alt="image" src="https://github.com/user-attachments/assets/ccb28cbf-addd-4400-bb66-24a418b8f160" />
+) |
 
 ## 📝 开源协议
 
