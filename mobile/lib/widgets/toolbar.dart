@@ -38,6 +38,26 @@ class Toolbar extends StatelessWidget {
           ),
           const VerticalDivider(),
           _buildToolSection(
+            title: 'Styles',
+            children: [
+              _buildStyleSlider(context, 'Border', (v) => context.read<CollageProvider>().setStyle(borderWidth: v), context.watch<CollageProvider>().state.borderWidth, 0, 40),
+              _buildStyleSlider(context, 'Radius', (v) => context.read<CollageProvider>().setStyle(cornerRadius: v), context.watch<CollageProvider>().state.cornerRadius, 0, 100),
+              _buildStyleSlider(context, 'Spacing', (v) => context.read<CollageProvider>().setStyle(spacing: v), context.watch<CollageProvider>().state.spacing, 0, 40),
+            ],
+          ),
+          const VerticalDivider(),
+          _buildToolSection(
+            title: 'Filters',
+            children: [
+              _buildFilterButton(context, 'None', {}),
+              _buildFilterButton(context, 'B&W', {'grayscale': 1.0, 'contrast': 1.2}),
+              _buildFilterButton(context, 'Sepia', {'sepia': 1.0}),
+              _buildFilterButton(context, 'Vivid', {'saturation': 1.5, 'contrast': 1.1}),
+              _buildFilterButton(context, 'Dark', {'brightness': 0.7}),
+            ],
+          ),
+          const VerticalDivider(),
+          _buildToolSection(
             title: 'Stickers',
             children: [
               _buildStickerButton(context, '😀'),
@@ -59,6 +79,53 @@ class Toolbar extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStyleSlider(BuildContext context, String label, Function(double) onChanged, double value, double min, double max) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10)),
+        SizedBox(
+          width: 80,
+          height: 30,
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterButton(BuildContext context, String name, Map<String, double> filters) {
+    final provider = context.read<CollageProvider>();
+    final selectedIndex = provider.state.selectedIndex;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: InkWell(
+        onTap: () {
+          if (selectedIndex != null) {
+            provider.updateImageFilters(selectedIndex, filters);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Please select an image first')),
+            );
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          height: 40,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Center(child: Text(name, style: const TextStyle(fontSize: 12))),
+        ),
       ),
     );
   }

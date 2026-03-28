@@ -12,15 +12,22 @@ class CollageCanvas extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<CollageProvider>().state;
 
-    return Stack(
-      children: [
-        // Background
-        _buildBackground(state.background),
-        // Layout Grid
-        _buildLayout(state.layout, state.images),
-        // Stickers
-        ...state.stickers.map((s) => StickerItem(sticker: s)),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          onTap: () => context.read<CollageProvider>().setSelectedIndex(null),
+          child: Stack(
+            children: [
+              // Background
+              _buildBackground(state.background),
+              // Layout Grid
+              _buildLayout(state, constraints.maxWidth, constraints.maxHeight),
+              // Stickers
+              ...state.stickers.map((s) => StickerItem(sticker: s)),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -51,23 +58,39 @@ class CollageCanvas extends StatelessWidget {
     }
   }
 
-  Widget _buildLayout(int layout, List<CollageImage?> images) {
+  Widget _buildLayout(CollageState state, double w, double h) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final w = constraints.maxWidth;
-        final h = constraints.maxHeight;
+        final totalW = constraints.maxWidth;
+        final totalH = constraints.maxHeight;
+
+        // Apply outer border (padding)
+        final canvasRect = Rect.fromLTWH(
+          state.borderWidth,
+          state.borderWidth,
+          totalW - (state.borderWidth * 2),
+          totalH - (state.borderWidth * 2),
+        );
 
         List<Widget> children = [];
-        List<Rect> rects = _getRectsForLayout(layout, w, h);
+        List<Rect> rects = _getRectsForLayout(
+          state.layout,
+          canvasRect.width,
+          canvasRect.height,
+          state.spacing,
+        );
 
-        for (int i = 0; i < layout; i++) {
-          final rect = rects[i];
+        for (int i = 0; i < state.layout; i++) {
+          final rect = rects[i].shift(Offset(canvasRect.left, canvasRect.top));
           children.add(
             Positioned.fromRect(
               rect: rect,
-              child: ImageItem(
-                index: i,
-                image: images[i],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(state.cornerRadius),
+                child: ImageItem(
+                  index: i,
+                  image: state.images[i],
+                ),
               ),
             ),
           );
@@ -78,42 +101,51 @@ class CollageCanvas extends StatelessWidget {
     );
   }
 
-  List<Rect> _getRectsForLayout(int layout, double w, double h) {
+  List<Rect> _getRectsForLayout(int layout, double w, double h, double spacing) {
+    final halfSpacing = spacing / 2;
+    
     switch (layout) {
       case 1:
         return [Rect.fromLTWH(0, 0, w, h)];
       case 2:
         return [
-          Rect.fromLTWH(0, 0, w / 2, h),
-          Rect.fromLTWH(w / 2, 0, w / 2, h),
+          Rect.fromLTWH(0, 0, w / 2 - halfSpacing, h),
+          Rect.fromLTWH(w / 2 + halfSpacing, 0, w / 2 - halfSpacing, h),
         ];
       case 3:
         return [
-          Rect.fromLTWH(0, 0, w / 2, h),
-          Rect.fromLTWH(w / 2, 0, w / 2, h / 2),
-          Rect.fromLTWH(w / 2, h / 2, w / 2, h / 2),
+          Rect.fromLTWH(0, 0, w / 2 - halfSpacing, h),
+          Rect.fromLTWH(w / 2 + halfSpacing, 0, w / 2 - halfSpacing, h / 2 - halfSpacing),
+          Rect.fromLTWH(w / 2 + halfSpacing, h / 2 + halfSpacing, w / 2 - halfSpacing, h / 2 - halfSpacing),
         ];
       case 4:
         return [
-          Rect.fromLTWH(0, 0, w / 2, h / 2),
-          Rect.fromLTWH(w / 2, 0, w / 2, h / 2),
-          Rect.fromLTWH(0, h / 2, w / 2, h / 2),
-          Rect.fromLTWH(w / 2, h / 2, w / 2, h / 2),
+          Rect.fromLTWH(0, 0, w / 2 - halfSpacing, h / 2 - halfSpacing),
+          Rect.fromLTWH(w / 2 + halfSpacing, 0, w / 2 - halfSpacing, h / 2 - halfSpacing),
+          Rect.fromLTWH(0, h / 2 + halfSpacing, w / 2 - halfSpacing, h / 2 - halfSpacing),
+          Rect.fromLTWH(w / 2 + halfSpacing, h / 2 + halfSpacing, w / 2 - halfSpacing, h / 2 - halfSpacing),
         ];
       case 6:
         return [
-          Rect.fromLTWH(0, 0, w / 3, h / 2),
-          Rect.fromLTWH(w / 3, 0, w / 3, h / 2),
-          Rect.fromLTWH(2 * w / 3, 0, w / 3, h / 2),
-          Rect.fromLTWH(0, h / 2, w / 3, h / 2),
-          Rect.fromLTWH(w / 3, h / 2, w / 3, h / 2),
-          Rect.fromLTWH(2 * w / 3, h / 2, w / 3, h / 2),
+          Rect.fromLTWH(0, 0, w / 3 - spacing * 2/3, h / 2 - halfSpacing),
+          Rect.fromLTWH(w / 3 + spacing * 1/3, 0, w / 3 - spacing * 2/3, h / 2 - halfSpacing),
+          Rect.fromLTWH(2 * w / 3 + spacing * 2/3, 0, w / 3 - spacing * 2/3, h / 2 - halfSpacing),
+          Rect.fromLTWH(0, h / 2 + halfSpacing, w / 3 - spacing * 2/3, h / 2 - halfSpacing),
+          Rect.fromLTWH(w / 3 + spacing * 1/3, h / 2 + halfSpacing, w / 3 - spacing * 2/3, h / 2 - halfSpacing),
+          Rect.fromLTWH(2 * w / 3 + spacing * 2/3, h / 2 + halfSpacing, w / 3 - spacing * 2/3, h / 2 - halfSpacing),
         ];
       case 9:
         return List.generate(9, (i) {
           int row = i ~/ 3;
           int col = i % 3;
-          return Rect.fromLTWH(col * w / 3, row * h / 3, w / 3, h / 3);
+          double itemW = (w - spacing * 2) / 3;
+          double itemH = (h - spacing * 2) / 3;
+          return Rect.fromLTWH(
+            col * (itemW + spacing),
+            row * (itemH + spacing),
+            itemW,
+            itemH,
+          );
         });
       default:
         return [Rect.fromLTWH(0, 0, w, h)];

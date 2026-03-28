@@ -8,6 +8,9 @@ class CollageState {
   final List<Sticker> stickers;
   final CollageBackground background;
   final int? selectedIndex;
+  final double borderWidth;
+  final double cornerRadius;
+  final double spacing;
 
   CollageState({
     this.layout = 1,
@@ -15,6 +18,9 @@ class CollageState {
     this.stickers = const [],
     CollageBackground? background,
     this.selectedIndex,
+    this.borderWidth = 12.0,
+    this.cornerRadius = 24.0,
+    this.spacing = 16.0,
   }) : background = background ?? CollageBackground();
 
   CollageState copyWith({
@@ -24,6 +30,9 @@ class CollageState {
     CollageBackground? background,
     int? selectedIndex,
     bool clearSelection = false,
+    double? borderWidth,
+    double? cornerRadius,
+    double? spacing,
   }) {
     return CollageState(
       layout: layout ?? this.layout,
@@ -31,6 +40,9 @@ class CollageState {
       stickers: stickers ?? this.stickers,
       background: background ?? this.background,
       selectedIndex: clearSelection ? null : (selectedIndex ?? this.selectedIndex),
+      borderWidth: borderWidth ?? this.borderWidth,
+      cornerRadius: cornerRadius ?? this.cornerRadius,
+      spacing: spacing ?? this.spacing,
     );
   }
 }
@@ -44,6 +56,28 @@ class CollageProvider with ChangeNotifier {
 
   void setSelectedIndex(int? index) {
     _state = _state.copyWith(selectedIndex: index, clearSelection: index == null);
+    notifyListeners();
+  }
+
+  void setStyle({double? borderWidth, double? cornerRadius, double? spacing}) {
+    _pushToUndo();
+    _state = _state.copyWith(
+      borderWidth: borderWidth,
+      cornerRadius: cornerRadius,
+      spacing: spacing,
+    );
+    notifyListeners();
+  }
+
+  void updateImageFilters(int index, Map<String, double> filters) {
+    _pushToUndo();
+    List<CollageImage?> newImages = List.from(_state.images);
+    if (newImages[index] != null) {
+      final currentFilters = Map<String, double>.from(newImages[index]!.filters);
+      currentFilters.addAll(filters);
+      newImages[index] = newImages[index]!.copyWith(filters: currentFilters);
+    }
+    _state = _state.copyWith(images: newImages);
     notifyListeners();
   }
 
