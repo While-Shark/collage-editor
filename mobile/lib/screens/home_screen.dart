@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import '../providers/collage_provider.dart';
 import '../widgets/collage_canvas.dart';
 import '../widgets/toolbar.dart';
@@ -13,6 +17,36 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 1; // Default to Preview
+  final ScreenshotController _screenshotController = ScreenshotController();
+
+  Future<void> _saveAndShare(bool isShare) async {
+    try {
+      final image = await _screenshotController.capture();
+      if (image == null) return;
+
+      final directory = await getApplicationDocumentsDirectory();
+      final imagePath = await File('${directory.path}/collage_${DateTime.now().millisecondsSinceEpoch}.png').create();
+      await imagePath.writeAsBytes(image);
+
+      if (isShare) {
+        await Share.shareXFiles([XFile(imagePath.path)], text: 'Check out my collage!');
+      } else {
+        // In a real mobile app, we'd save to gallery. 
+        // For now, we'll just show a success message.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('拼图已保存至: ${imagePath.path}')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('操作失败: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(_getTitle()),
         actions: [
           IconButton(
+            icon: const Icon(Icons.save_alt_outlined),
+            onPressed: () => _saveAndShare(false),
+          ),
+          IconButton(
             icon: const Icon(Icons.share_outlined),
-            onPressed: () {},
+            onPressed: () => _saveAndShare(true),
           ),
         ],
       ),
@@ -37,10 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           IndexedStack(
             index: _currentIndex,
-            children: const [
-              LayoutTabView(),
-              PreviewTabView(),
-              EditTabView(),
+            children: [
+              const LayoutTabView(),
+              PreviewTabView(controller: _screenshotController),
+              EditTabView(controller: _screenshotController),
             ],
           ),
           _buildBottomNav(),
@@ -256,6 +294,37 @@ class _MiniCollagePreview extends StatelessWidget {
             Rect.fromLTWH(w / 2 + spacing / 2, h / 2 + spacing / 2, w / 2 - spacing / 2, h / 2 - spacing / 2),
           ];
           break;
+        case 4:
+          rects = [
+            Rect.fromLTWH(0, 0, w / 2 - spacing / 2, h / 2 - spacing / 2),
+            Rect.fromLTWH(w / 2 + spacing / 2, 0, w / 2 - spacing / 2, h / 2 - spacing / 2),
+            Rect.fromLTWH(0, h / 2 + spacing / 2, w / 2 - spacing / 2, h / 2 - spacing / 2),
+            Rect.fromLTWH(w / 2 + spacing / 2, h / 2 + spacing / 2, w / 2 - spacing / 2, h / 2 - spacing / 2),
+          ];
+          break;
+        case 6:
+          rects = [
+            Rect.fromLTWH(0, 0, w / 3 - spacing * 2 / 3, h / 2 - spacing / 2),
+            Rect.fromLTWH(w / 3 + spacing / 3, 0, w / 3 - spacing * 2 / 3, h / 2 - spacing / 2),
+            Rect.fromLTWH(w * 2 / 3 + spacing * 2 / 3, 0, w / 3 - spacing * 2 / 3, h / 2 - spacing / 2),
+            Rect.fromLTWH(0, h / 2 + spacing / 2, w / 3 - spacing * 2 / 3, h / 2 - spacing / 2),
+            Rect.fromLTWH(w / 3 + spacing / 3, h / 2 + spacing / 2, w / 3 - spacing * 2 / 3, h / 2 - spacing / 2),
+            Rect.fromLTWH(w * 2 / 3 + spacing * 2 / 3, h / 2 + spacing / 2, w / 3 - spacing * 2 / 3, h / 2 - spacing / 2),
+          ];
+          break;
+        case 9:
+          rects = [
+            Rect.fromLTWH(0, 0, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(w / 3 + spacing / 3, 0, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(w * 2 / 3 + spacing * 2 / 3, 0, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(0, h / 3 + spacing / 3, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(w / 3 + spacing / 3, h / 3 + spacing / 3, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(w * 2 / 3 + spacing * 2 / 3, h / 3 + spacing / 3, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(0, h * 2 / 3 + spacing * 2 / 3, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(w / 3 + spacing / 3, h * 2 / 3 + spacing * 2 / 3, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+            Rect.fromLTWH(w * 2 / 3 + spacing * 2 / 3, h * 2 / 3 + spacing * 2 / 3, w / 3 - spacing * 2 / 3, h / 3 - spacing * 2 / 3),
+          ];
+          break;
         default:
           rects = [Rect.fromLTWH(0, 0, w, h)];
       }
@@ -276,7 +345,8 @@ class _MiniCollagePreview extends StatelessWidget {
 }
 
 class PreviewTabView extends StatelessWidget {
-  const PreviewTabView({super.key});
+  final ScreenshotController controller;
+  const PreviewTabView({super.key, required this.controller});
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -299,7 +369,10 @@ class PreviewTabView extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(32),
-                  child: const CollageCanvas(),
+                  child: Screenshot(
+                    controller: controller,
+                    child: const CollageCanvas(),
+                  ),
                 ),
               ),
             ),
@@ -312,7 +385,8 @@ class PreviewTabView extends StatelessWidget {
 }
 
 class EditTabView extends StatelessWidget {
-  const EditTabView({super.key});
+  final ScreenshotController controller;
+  const EditTabView({super.key, required this.controller});
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CollageProvider>();
@@ -354,13 +428,16 @@ class EditTabView extends StatelessWidget {
             ],
           ),
         ),
-        const Expanded(
+        Expanded(
           child: Center(
             child: AspectRatio(
               aspectRatio: 1,
               child: Padding(
-                padding: EdgeInsets.all(32.0),
-                child: CollageCanvas(),
+                padding: const EdgeInsets.all(32.0),
+                child: Screenshot(
+                  controller: controller,
+                  child: const CollageCanvas(),
+                ),
               ),
             ),
           ),

@@ -161,6 +161,29 @@ class _ToolbarState extends State<Toolbar> {
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '滤镜预设',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              if (selectedIndex != null)
+                TextButton.icon(
+                  onPressed: () {
+                    // This will be handled in the filter selection logic
+                  },
+                  icon: const Icon(Icons.done_all, size: 16, color: Color(0xFF7C4DFF)),
+                  label: const Text(
+                    '应用到所有',
+                    style: TextStyle(color: Color(0xFF7C4DFF), fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
+        ),
         SizedBox(
           height: 90,
           child: ListView.builder(
@@ -174,6 +197,12 @@ class _ToolbarState extends State<Toolbar> {
                 child: Column(
                   children: [
                     GestureDetector(
+                      onLongPress: () {
+                        provider.applyFiltersToAll(filter['values'] as Map<String, double>);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('已应用到所有图片')),
+                        );
+                      },
                       onTap: () {
                         if (selectedIndex != null) {
                           provider.updateImageFilters(selectedIndex, filter['values'] as Map<String, double>);
@@ -199,6 +228,13 @@ class _ToolbarState extends State<Toolbar> {
                 ),
               );
             },
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            '提示：长按滤镜可应用到所有图片',
+            style: TextStyle(fontSize: 10, color: Colors.grey),
           ),
         ),
         if (selectedIndex != null) ...[

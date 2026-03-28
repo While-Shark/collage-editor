@@ -70,7 +70,7 @@ class _ImageItemState extends State<ImageItem> {
       onTap: () => context.read<CollageProvider>().setSelectedIndex(widget.index),
       child: Container(
         decoration: BoxDecoration(
-          border: isSelected ? Border.all(color: Colors.blue, width: 3) : null,
+          border: isSelected ? Border.all(color: const Color(0xFF7C4DFF), width: 3) : null,
         ),
         child: ClipRect(
           child: Stack(
@@ -113,6 +113,38 @@ class _ImageItemState extends State<ImageItem> {
                   ),
                 ),
               ),
+              if (isSelected) ...[
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () => context.read<CollageProvider>().removeImage(widget.index),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF7C4DFF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.refresh, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

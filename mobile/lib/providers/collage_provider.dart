@@ -93,6 +93,26 @@ class CollageProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void applyFiltersToAll(Map<String, double> filters) {
+    _pushToUndo();
+    List<CollageImage?> newImages = _state.images.map((img) {
+      if (img == null) return null;
+      final currentFilters = Map<String, double>.from(img.filters);
+      currentFilters.addAll(filters);
+      return img.copyWith(filters: currentFilters);
+    }).toList();
+    _state = _state.copyWith(images: newImages);
+    notifyListeners();
+  }
+
+  void removeImage(int index) {
+    _pushToUndo();
+    List<CollageImage?> newImages = List.from(_state.images);
+    newImages[index] = null;
+    _state = _state.copyWith(images: newImages, clearSelection: true);
+    notifyListeners();
+  }
+
   void _pushToUndo() {
     _undoStack.add(_state);
     _redoStack.clear();
